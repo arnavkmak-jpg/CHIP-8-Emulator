@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <stack>
 #include <array>
+#include <string>
 
 class CHIP8
 {
@@ -33,10 +34,12 @@ private:
     // we use formula row * width(64) + column to find index
     std::array<uint8_t, 2048> chip8_Display{};
 
-    std::array<bool, 8> chip8Keypad{};
+    // stores the 16 key present on a chip 8 kepad
+    std::array<bool, 16> chip8Keypad{};
 
 public:
     CHIP8();
+    bool loadROM(const std::string& filename);
 };
 
 #endif
