@@ -40,6 +40,10 @@ private:
 public:
     CHIP8();
     bool loadROM(const std::string& filename);
+    void cycle();
+    const std::array<uint8_t,2048>& getDisplay() const{
+        return chip8_Display;
+    }
 };
 
 #endif
