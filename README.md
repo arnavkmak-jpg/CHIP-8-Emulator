@@ -31,6 +31,7 @@ canonical CHIP-8 ROMs and games.
 ## References & Acknowledgments
 - [Cowgod's CHIP-8 Technical Reference v1.0](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) by Thomas P. Greene - Invaluable technical specification for memory layout and opcode behaviors.
 - [Guide to making a CHIP-8 emulator](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/) by Tobias V. Langhoff - Architecture guidance and modern implementation guidance.
+- [CHIP-8 Test Suite](https://github.com/Timendus/chip8-test-suite) by Timendus - Comprehensive test ROMs used to verify opcode execution, flags, and quirk behaviors.
 
 ### Build Instructions
 ```bash
