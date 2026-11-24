@@ -268,8 +268,16 @@ void CHIP8::cycle()
                 // inner loop draws for 8 bits
                 for(int j = 7; j >= 0; --j){
                     // extract each bit from a byte stored in memory tape
+                    uint8_t spriteBit = (memoryTape[register_I + i] >> j) & 1;
+
+                    // if the display bit is already at 1 and we are about to put 1 set the register V[F] to 1
+                    if (chip8_Display[displayIndex] == 1 && spriteBit == 1){
+                        register_V[0xF] = 1;
+                    }
+                    
                     // mask that bit to each pixel of display
-                    chip8_Display[displayIndex] ^= (memoryTape[register_I + i] >> j) & 1;
+
+                    chip8_Display[displayIndex] ^= spriteBit;
                     ++displayIndex;
                 }
             }
