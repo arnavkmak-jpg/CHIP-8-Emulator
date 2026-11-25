@@ -6,6 +6,7 @@ find_package(SDL2 REQUIRED)
 add_executable(CHIP-8Emu 
     src/main.cpp
     src/chip8.cpp
+    src/platform.cpp
 )
 
 target_link_libraries(CHIP-8Emu PRIVATE SDL2::SDL2)
