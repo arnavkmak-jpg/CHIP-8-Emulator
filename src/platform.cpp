@@ -73,19 +73,19 @@ bool Platform::keypadInput(std::array<bool, 16>& chip8keypad)
 
             switch (e.key.keysym.sym){
                 case SDLK_1:{
-                    chip8keypad[0x0] = state;
-                    break;
-                }
-                case SDLK_2:{
                     chip8keypad[0x1] = state;
                     break;
                 }
-                case SDLK_3:{
+                case SDLK_2:{
                     chip8keypad[0x2] = state;
                     break;
                 }
-                case SDLK_4:{
+                case SDLK_3:{
                     chip8keypad[0x3] = state;
+                    break;
+                }
+                case SDLK_4:{
+                    chip8keypad[0xC] = state;
                     break;
                 }
                 case SDLK_q:{
@@ -101,35 +101,35 @@ bool Platform::keypadInput(std::array<bool, 16>& chip8keypad)
                     break;
                 }
                 case SDLK_r:{
-                    chip8keypad[0x7] = state;
-                    break;
-                }
-                case SDLK_a:{
-                    chip8keypad[0x8] = state;
-                    break;
-                }
-                case SDLK_s:{
-                    chip8keypad[0x9] = state;
-                    break;
-                }
-                case SDLK_d:{
-                    chip8keypad[0xA] = state;
-                    break;
-                }
-                case SDLK_f:{
-                    chip8keypad[0xB] = state;
-                    break;
-                }
-                case SDLK_z:{
-                    chip8keypad[0xC] = state;
-                    break;
-                }
-                case SDLK_x:{
                     chip8keypad[0xD] = state;
                     break;
                 }
-                case SDLK_c:{
+                case SDLK_a:{
+                    chip8keypad[0x7] = state;
+                    break;
+                }
+                case SDLK_s:{
+                    chip8keypad[0x8] = state;
+                    break;
+                }
+                case SDLK_d:{
+                    chip8keypad[0x9] = state;
+                    break;
+                }
+                case SDLK_f:{
                     chip8keypad[0xE] = state;
+                    break;
+                }
+                case SDLK_z:{
+                    chip8keypad[0xA] = state;
+                    break;
+                }
+                case SDLK_x:{
+                    chip8keypad[0x0] = state;
+                    break;
+                }
+                case SDLK_c:{
+                    chip8keypad[0xB] = state;
                     break;
                 }
                 case SDLK_v:{
@@ -177,12 +177,12 @@ void Platform::platformUpdate(const std::array<uint8_t, 2048>& display)
 void Platform::capFrameRate()
 {
     // we cap our fps at 60 
-    constexpr int TARGET_FPS{60};
+    constexpr uint32_t TARGET_FPS{60};
     // for 60 fps it will have 16.6 ms delay between each frame
-    constexpr int FRAME_DELAY{1000 / TARGET_FPS};
+    constexpr uint32_t FRAME_DELAY{1000 / TARGET_FPS};
 
     // time spent to execute 
-    int frameTime{SDL_GetTicks() - lastFrameTime};
+    uint32_t frameTime{SDL_GetTicks() - lastFrameTime};
 
     // if the frametime is less than the frame delay task is completed so put CPU to sleep
     if (FRAME_DELAY > frameTime){

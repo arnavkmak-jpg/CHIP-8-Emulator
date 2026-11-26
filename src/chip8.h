@@ -34,7 +34,7 @@ private:
     // we use formula row * width(64) + column to find index
     std::array<uint8_t, 2048> chip8_Display{};
 
-    // stores the 16 key present on a chip 8 kepad
+    // stores the 16 key present on a chip 8 keypad
     std::array<bool, 16> chip8Keypad{};
 
 public:
@@ -43,6 +43,10 @@ public:
     void cycle();
     const std::array<uint8_t,2048>& getDisplay() const{
         return chip8_Display;
+    }
+    void updateTimers();
+    std::array<bool, 16>& getKeypad(){
+        return chip8Keypad;
     }
 };
 

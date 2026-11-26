@@ -21,7 +21,22 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    // TODO: finish the linkage in main function
+    while (platform.keypadInput(chip8.getKeypad())){
+        // CPU executes 10 instructions
+        for (size_t i = 0; i < 10; ++i){
+            // run the instruction cycle
+            chip8.cycle();
+        }
+
+        // update the delay and sound timers
+        chip8.updateTimers();
+
+        // update the screen and draw the sprites
+        platform.platformUpdate(chip8.getDisplay());
+
+        // put the CPU at rest for leftover time
+        platform.capFrameRate();
+    }
 
     return 0;
 }

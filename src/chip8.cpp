@@ -84,7 +84,6 @@ void CHIP8::cycle()
     // move to next to next bit
     programCounter += 2;
 
-    // TODO: put the operation itself in the variables to reduce repetition
     uint16_t getFirstNibbleBitMask  = instructionFromROM & 0xF000;
     uint16_t getSecondNibbleBitMask = (instructionFromROM & 0x0F00) >> 8;
     uint16_t getThirdNibbleBitMask  = (instructionFromROM & 0x00F0) >> 4;
@@ -188,39 +187,63 @@ void CHIP8::cycle()
                 // 0x8XY4
                 case 0x4:{
                     // set V[X] = V[X] + V[Y]
-                    register_V[getSecondNibbleBitMask] = register_V[getSecondNibbleBitMask] + register_V[getThirdNibbleBitMask];
-                    if (register_V[getSecondNibbleBitMask] > 255){
-                        register_V[0xF] = 0;
+                    uint16_t sum = register_V[getSecondNibbleBitMask] + register_V[getThirdNibbleBitMask];
+                    register_V[getSecondNibbleBitMask] = sum;
+                    if (sum > 255){
+                        register_V[0xF] = 1;
+                    }
+                    else {
+                        register_V[0xF] = 0; 
                     }
                     break;
                 }
                 // 0x8XY5
                 case 0x5:{
                     // set V[X] = V[X] - V[Y]
+                    bool noBorrow = register_V[getSecondNibbleBitMask] >= register_V[getThirdNibbleBitMask];
                     register_V[getSecondNibbleBitMask] = register_V[getSecondNibbleBitMask] - register_V[getThirdNibbleBitMask];
+                    
+                    if (noBorrow){
+                        register_V[0xF] = 1;
+                    }
+                    else {
+                        register_V[0xF] = 0;
+                    }
                     break;
                 }
                 case 0x6:{
-                    // put lsb of V[X] in PC
                     // set V[X] >>= 1
-                    register_V[0xF] = register_V[getSecondNibbleBitMask] & getLastNibbleBitMask;
+                    // put lsb of V[X] in V[F]
+                    // take a variable 1st for edge case V[F]
+                    uint8_t lsb = register_V[getSecondNibbleBitMask] & 1;
                     register_V[getSecondNibbleBitMask] >>= 1;
+                    register_V[0xF] = lsb;
+                    
                     break;
                 }
                 // 0x8XY6
                 case 0x7:{
                     // set V[X] = V[Y] - V[X]
+                    bool noBorrow = register_V[getThirdNibbleBitMask] >= register_V[getSecondNibbleBitMask];
                     register_V[getSecondNibbleBitMask] = register_V[getThirdNibbleBitMask] - register_V[getSecondNibbleBitMask];
+                    if (noBorrow){
+                        register_V[0xF] = 1;
+                    }
+                    else {
+                        register_V[0xF] = 0;
+                    }
                     break;
                 }
                 case 0xE:{
-                    // put msb of V[X] in PC
                     // set V[X] <<= 1
-                    register_V[0xF] = register_V[getSecondNibbleBitMask] & getFirstNibbleBitMask;
+                    // put msb of V[X] in V[F]
+                    uint8_t msb = (register_V[getSecondNibbleBitMask] >> 7) & 1;
                     register_V[getSecondNibbleBitMask] <<= 1;
+                    register_V[0xF] = msb;
                     break;
                 }
             }
+            break;
         }
         case 0x9000:{
             // 0x9XY0
@@ -262,13 +285,20 @@ void CHIP8::cycle()
             // number of indexes to be covered in the memory tape to print each sprite
             for (uint8_t i = 0; i < spriteHeight; ++i){
 
-                // 1D index = (ROW * width) + COLUMN
-                size_t displayIndex = ((spriteIndex_Y + i)* 64) + spriteIndex_X;
+                // edge case if our sprite reaches past 31st pixel
+                if ((spriteIndex_Y + i) >= 32) break;
 
                 // inner loop draws for 8 bits
                 for(int j = 7; j >= 0; --j){
+                    // edge case if ur sprite reaches past 63rd pixel
+                    size_t pixel_X {spriteIndex_X + (7 - j)};
+                    if (pixel_X >= 64) break;
+
                     // extract each bit from a byte stored in memory tape
                     uint8_t spriteBit = (memoryTape[register_I + i] >> j) & 1;
+
+                    // 1D index = (ROW * width) + COLUMN
+                    size_t displayIndex = ((spriteIndex_Y + i)* 64) + pixel_X;
 
                     // if the display bit is already at 1 and we are about to put 1 set the register V[F] to 1
                     if (chip8_Display[displayIndex] == 1 && spriteBit == 1){
@@ -278,7 +308,6 @@ void CHIP8::cycle()
                     // mask that bit to each pixel of display
 
                     chip8_Display[displayIndex] ^= spriteBit;
-                    ++displayIndex;
                 }
             }
             break;
@@ -294,7 +323,7 @@ void CHIP8::cycle()
             // 0xEXA1
             else if (getLastByteBitMask == 0xA1){
                 // skip one instruction if corresponding key is not pressed
-                if (chip8Keypad[register_V[getSecondNibbleBitMask]]){
+                if (!chip8Keypad[register_V[getSecondNibbleBitMask]]){
                     programCounter += 2;
                 }
             }
@@ -332,8 +361,10 @@ void CHIP8::cycle()
                     // stays on current instruction until a key is pressed
                     bool keyPressed{false};
                     for (size_t i = 0; i < 16; i++){
-                        if (chip8_Display[i] == 1){
+                        if (chip8Keypad[i] == 1){
                             keyPressed = true;
+                            register_V[getSecondNibbleBitMask] = i;
+                            break;
                         }
                     }
                     // if not pressed go back to prev instruction
@@ -344,8 +375,9 @@ void CHIP8::cycle()
                 }
                 // 0xFX29
                 case 0x29:{
-                    // set register I = V[X]
-                    register_I = register_V[getSecondNibbleBitMask];
+                    // set register I = memoryTape[index corresponding to value of V[X] in sprite array]
+                    uint8_t spriteIndex = (register_V[getSecondNibbleBitMask] & 0x0F) * 5;
+                    register_I = 80 + spriteIndex;
                     break;
                 }
                 // 0xFX33
@@ -375,6 +407,17 @@ void CHIP8::cycle()
 
             }
         }
+        break;
+    }
+}
+
+void CHIP8::updateTimers()
+{
+    if (delayTimer > 0){
+        --delayTimer;
+    }
+    if (soundTimer > 0){
+        --soundTimer;
     }
 }
 

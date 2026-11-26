@@ -1,5 +1,6 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <array>
 
