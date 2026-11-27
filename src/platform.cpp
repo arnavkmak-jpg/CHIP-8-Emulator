@@ -6,10 +6,6 @@
 // constructor for initialising SDL2
 Platform::Platform()
 {
-    constexpr int WINDOW_WIDTH  {640};
-    constexpr int WINDOW_HEIGHT {320};
-    constexpr int TEXTURE_WIDTH {64};
-    constexpr int TEXTURE_HEIGHT{32};
 
     // check if sdl initialised
     if (SDL_Init(SDL_INIT_VIDEO) < 0){
@@ -30,6 +26,8 @@ Platform::Platform()
         std::cerr << "Renderer could not be initialised! SDL_ERROR: " << SDL_GetError() << "\n";
         return;
     }
+    // to enable alpha blending for scanline effect
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     // initialiase the texture
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TEXTURE_WIDTH, TEXTURE_HEIGHT);
@@ -155,7 +153,8 @@ void Platform::platformUpdate(const std::array<uint8_t, 2048>& display)
     // loop through the display pixels
     for (size_t i = 0; i < 64*32; ++i){
         // if value 1 is on display pixel we use colour for sprite otherwise colour for background
-        pixels[i] = (display[i] == 1) ? 0x0F380FFF : 0x9BBC0FFF;
+        // sets prevDisplay value to that of current display each cycle so that atleast one of them is 1 and sprite don't flicker
+        pixels[i] = (display[i]) ? 0x0F380FFF : 0x9BBC0FFF;
     }
 
     // update the entire texture for a horizontal row of 64 pixels x 4 bytes
@@ -169,6 +168,13 @@ void Platform::platformUpdate(const std::array<uint8_t, 2048>& display)
 
     // copy the 64 x 32 texture onto the screen
     SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+
+    // draw the transparent scanlines over the solid colour
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 45);
+
+    for (int i = 0; i < WINDOW_HEIGHT; i += 3){
+        SDL_RenderDrawLine(renderer, 0, i, WINDOW_WIDTH, i);
+    }
 
     // print the frame on the back buffer onto front buffer
     SDL_RenderPresent(renderer);
