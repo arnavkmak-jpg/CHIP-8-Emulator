@@ -40,14 +40,14 @@ canonical CHIP-8 ROMs and games.
     |  `1 - C`   |      `1 - 4`          |
     | `4 - D` | `Q - R` |
     | `7 - E` | `A - F` |
-    | `A - F` | `Z - C` |
+    | `A - F` | `Z - V` |
 
 ## Test Results
 - Passes all test results in Timendus's test suite
 
     | Flags test | Corax test |
     | :--------: | :--------: |
-    | ![Flags](media\flags.png) | ![Corax](media\corax+.png) |
+    | ![Flags](media/flags.png) | ![Corax](media/corax+.png) |
 
 ## References & Acknowledgments
 - [Cowgod's CHIP-8 Technical Reference v1.0](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) by Thomas P. Greene - Invaluable technical specification for memory layout and opcode behaviors.
