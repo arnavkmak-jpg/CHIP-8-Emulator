@@ -31,6 +31,9 @@ int main(int argc, char* argv[]){
         // update the delay and sound timers
         chip8.updateTimers();
 
+        // beep if the sound time is active
+        platform.setBeep(chip8.isSoundActive());
+
         // update the screen and draw the sprites
         platform.platformUpdate(chip8.getDisplay());
 

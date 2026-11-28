@@ -48,6 +48,9 @@ public:
     std::array<bool, 16>& getKeypad(){
         return chip8Keypad;
     }
+    bool isSoundActive() const{
+        return soundTimer > 0;
+    }
 };
 
 #endif

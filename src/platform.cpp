@@ -8,7 +8,7 @@ Platform::Platform()
 {
 
     // check if sdl initialised
-    if (SDL_Init(SDL_INIT_VIDEO) < 0){
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0){
         std::cerr << "SDL cannot be initialised! SDL_ERROR: " << SDL_GetError() <<"\n";
         return; 
     } 
@@ -36,6 +36,40 @@ Platform::Platform()
         return;
     }
 
+    // loop through the beep buffer array
+    for (size_t i; i < 735; ++i){
+        // alternates between 50 samples
+        if ((i / 50) % 2){
+            beepBuffer[i] = 3000;
+        }
+        else {
+            beepBuffer[i] = -3000;
+        }
+    }
+
+    // for decoding the audio
+    SDL_AudioSpec want{};
+
+    // read 44100 numbers per second
+    want.freq = 44100;
+
+    // set channel to mono
+    want.channels = 1;
+
+    // each number will be 16 signed bit
+    want.format = AUDIO_S16SYS;
+
+    // pull 1024 sample from SDL queue
+    want.samples = 1024;
+
+    audioDevice = SDL_OpenAudioDevice(nullptr, 0, &want, nullptr, 0);
+    if (audioDevice <=0){
+        std::cerr << "Audio device failed to initialise SDL_ERROR:" << SDL_GetError() << "\n";
+    }
+
+    // unmute the speaker
+    SDL_PauseAudioDevice(audioDevice, 0);
+
     // measure the time since initialisation
     lastFrameTime = SDL_GetTicks();
 }
@@ -43,6 +77,8 @@ Platform::Platform()
 // deconstructor for destroying what we initialised
 Platform::~Platform()
 {
+    SDL_CloseAudioDevice(audioDevice);
+
     SDL_DestroyTexture(texture);
 
     SDL_DestroyRenderer(renderer);
@@ -197,4 +233,20 @@ void Platform::capFrameRate()
 
     // update the frame time for the next frame 
     lastFrameTime = SDL_GetTicks();
+}
+
+void Platform::setBeep(bool active)
+{
+    if (active){
+        // keep 2 frames buffered for no lag
+        // check if less than 2 frames left
+        if (SDL_GetQueuedAudioSize(audioDevice) < beepBuffer.size() * sizeof(int16_t) * 2){
+            // we add 1 frame
+            SDL_QueueAudio(audioDevice, beepBuffer.data(), beepBuffer.size() * sizeof(int16_t));
+        }  
+    }
+    else {
+            // if soundtimer is not active clear the audio queue
+            SDL_ClearQueuedAudio(audioDevice);
+        }
 }
