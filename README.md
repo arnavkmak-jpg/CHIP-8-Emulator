@@ -9,7 +9,7 @@ language created by Joseph Weisbecker in the 1970s. It implements the full
 virtual hardware specifications, opcode instruction set, and timers to run 
 canonical CHIP-8 ROMs and games.
 
-![Pong](media\pong.png)
+![Pong](media/pong.png)
 
 ## Hardware Architecture
 
